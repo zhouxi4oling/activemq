@@ -46,6 +46,9 @@ public class ConsumerInfo extends BaseCommand implements TransientInitializer {
     protected boolean dispatchAsync;
     protected String selector;
     protected String clientId;
+    protected String clientGroupId;
+    protected String clientAppId;
+    protected String clientEnv;
     protected String subscriptionName;
     protected boolean noLocal;
     protected boolean exclusive;
@@ -89,6 +92,9 @@ public class ConsumerInfo extends BaseCommand implements TransientInitializer {
 
     public void copy(ConsumerInfo info) {
         super.copy(info);
+        info.clientGroupId = clientGroupId;
+        info.clientAppId = clientAppId;
+        info.clientEnv = clientEnv;
         info.consumerId = consumerId;
         info.destination = destination;
         info.prefetchSize = prefetchSize;
@@ -315,6 +321,39 @@ public class ConsumerInfo extends BaseCommand implements TransientInitializer {
 
     public void setPriority(byte priority) {
         this.priority = priority;
+    }
+
+    /**
+     * @openwire:property version=1
+     */
+    public String getClientGroupId() {
+        return clientGroupId;
+    }
+
+    public void setClientGroupId(String clientGroupId) {
+        this.clientGroupId = clientGroupId;
+    }
+
+    /**
+     * @openwire:property version=1
+     */
+    public String getClientAppId() {
+        return clientAppId;
+    }
+
+    public void setClientAppId(String clientAppId) {
+        this.clientAppId = clientAppId;
+    }
+
+    /**
+     * @openwire:property version=1
+     */
+    public String getClientEnv() {
+        return clientEnv;
+    }
+
+    public void setClientEnv(String clientEnv) {
+        this.clientEnv = clientEnv;
     }
 
     /**

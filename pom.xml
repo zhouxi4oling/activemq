@@ -92,7 +92,7 @@
     <jxta-version>2.0</jxta-version>
     <karaf-version>2.4.1</karaf-version>
     <leveldb-api-version>0.6</leveldb-api-version>
-    <leveldb-version>0.6</leveldb-version>
+    <leveldb-version>0.7</leveldb-version>
     <leveldbjni-version>1.8</leveldbjni-version>
     <log4j-version>1.2.17</log4j-version>
     <mockito-version>1.10.17</mockito-version>

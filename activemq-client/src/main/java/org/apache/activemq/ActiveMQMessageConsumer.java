@@ -202,6 +202,9 @@ public class ActiveMQMessageConsumer implements MessageAvailableConsumer, StatsC
         setTransformer(session.getTransformer());
 
         this.info = new ConsumerInfo(consumerId);
+        this.info.setClientGroupId(this.session.getClientGroupId());
+        this.info.setClientAppId(this.session.getClientAppId());
+        this.info.setClientEnv(this.session.getClientEnv());
         this.info.setExclusive(this.session.connection.isExclusiveConsumer());
         this.info.setClientId(this.session.connection.getClientID());
         this.info.setSubscriptionName(name);

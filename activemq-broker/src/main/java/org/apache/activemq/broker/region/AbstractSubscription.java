@@ -47,8 +47,12 @@ public abstract class AbstractSubscription implements Subscription {
     protected Broker broker;
     protected ConnectionContext context;
     protected ConsumerInfo info;
+    protected String clientGroupId;
+    protected String clientAppId;
+    protected String clientEnv;
     protected final DestinationFilter destinationFilter;
     protected final CopyOnWriteArrayList<Destination> destinations = new CopyOnWriteArrayList<Destination>();
+    protected final String rawSelector;
 
     private BooleanExpression selectorExpression;
     private ObjectName objectName;
@@ -61,6 +65,10 @@ public abstract class AbstractSubscription implements Subscription {
         this.broker = broker;
         this.context = context;
         this.info = info;
+        this.rawSelector = info.getSelector();
+        this.clientGroupId = info.getClientGroupId();
+        this.clientAppId = info.getClientAppId();
+        this.clientEnv = info.getClientEnv();
         this.destinationFilter = DestinationFilter.parseFilter(info.getDestination());
         this.selectorExpression = parseSelector(info);
         this.lastAckTime = System.currentTimeMillis();
@@ -166,6 +174,11 @@ public abstract class AbstractSubscription implements Subscription {
         // its valid so lets actually update it now
         info.setSelector(selector);
         this.selectorExpression = newSelector;
+    }
+
+    @Override
+    public void refreshSelector() throws InvalidSelectorException {
+        throw new UnsupportedOperationException();
     }
 
     @Override

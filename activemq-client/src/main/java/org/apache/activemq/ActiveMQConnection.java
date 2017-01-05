@@ -50,6 +50,8 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.activemq.advisory.DestinationSource;
 import org.apache.activemq.blob.BlobTransferPolicy;
 import org.apache.activemq.broker.region.policy.RedeliveryPolicyMap;
@@ -206,6 +208,16 @@ public class ActiveMQConnection implements Connection, TopicConnection, QueueCon
 
     private List<String> trustedPackages = new ArrayList<String>();
     private boolean trustAllPackages = false;
+
+    @Getter
+    @Setter
+    private String clientGroupId;
+    @Getter
+    @Setter
+    private String clientAppId;
+    @Getter
+    @Setter
+    private String clientEnv;
 
     /**
      * Construct an <code>ActiveMQConnection</code>

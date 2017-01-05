@@ -56,6 +56,8 @@ import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 import javax.jms.TransactionRolledBackException;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.activemq.blob.BlobDownloader;
 import org.apache.activemq.blob.BlobTransferPolicy;
 import org.apache.activemq.blob.BlobUploader;
@@ -232,6 +234,16 @@ public class ActiveMQSession implements Session, QueueSession, TopicSession, Sta
     private BlobTransferPolicy blobTransferPolicy;
     private long lastDeliveredSequenceId = -2;
 
+    @Getter
+    @Setter
+    private String clientGroupId;
+    @Getter
+    @Setter
+    private String clientAppId;
+    @Getter
+    @Setter
+    private String clientEnv;
+
     /**
      * Construct the Session
      *
@@ -255,6 +267,9 @@ public class ActiveMQSession implements Session, QueueSession, TopicSession, Sta
         this.connection.asyncSendPacket(info);
         setTransformer(connection.getTransformer());
         setBlobTransferPolicy(connection.getBlobTransferPolicy());
+        setClientGroupId(connection.getClientGroupId());
+        setClientAppId(connection.getClientAppId());
+        setClientEnv(connection.getClientEnv());
         this.connectionExecutor=connection.getExecutor();
         this.executor = new ActiveMQSessionExecutor(this);
         connection.addSession(this);

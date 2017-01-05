@@ -151,6 +151,8 @@ public interface Subscription extends SubscriptionRecovery {
      */
     void setSelector(String selector) throws InvalidSelectorException, UnsupportedOperationException;
 
+    void refreshSelector() throws InvalidSelectorException;
+
     /**
      * @return the JMX object name that this subscription was registered as if applicable
      */

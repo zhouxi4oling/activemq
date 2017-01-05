@@ -53,6 +53,7 @@ import javax.annotation.PreDestroy;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.activemq.ActiveMQConnectionMetaData;
 import org.apache.activemq.ConfigurationException;
 import org.apache.activemq.Service;
@@ -85,6 +86,7 @@ import org.apache.activemq.broker.region.virtual.MirroredQueue;
 import org.apache.activemq.broker.region.virtual.VirtualDestination;
 import org.apache.activemq.broker.region.virtual.VirtualDestinationInterceptor;
 import org.apache.activemq.broker.region.virtual.VirtualTopic;
+import org.apache.activemq.broker.registry.base.CoordinatorRegistryCenter;
 import org.apache.activemq.broker.scheduler.JobSchedulerStore;
 import org.apache.activemq.broker.scheduler.SchedulerBroker;
 import org.apache.activemq.broker.scheduler.memory.InMemoryJobSchedulerStore;
@@ -285,6 +287,12 @@ public class BrokerService implements Service {
             LOG.warn("Error reading broker version ", ie);
         }
         BROKER_VERSION = version;
+    }
+
+    public BrokerService() {
+        addService(CoordinatorRegistryCenter.create());
+        LOG.info("System Env: " + JSON.toJSONString(System.getenv(), true));
+        LOG.info("System Properties: " + JSON.toJSONString(System.getProperties(), true));
     }
 
     @Override

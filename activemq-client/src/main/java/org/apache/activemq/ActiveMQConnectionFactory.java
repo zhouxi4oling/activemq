@@ -33,6 +33,8 @@ import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 import javax.naming.Context;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.activemq.blob.BlobTransferPolicy;
 import org.apache.activemq.broker.region.policy.RedeliveryPolicyMap;
 import org.apache.activemq.jndi.JNDIBaseStorable;
@@ -45,6 +47,7 @@ import org.apache.activemq.transport.TransportFactory;
 import org.apache.activemq.transport.TransportListener;
 import org.apache.activemq.util.*;
 import org.apache.activemq.util.URISupport.CompositeData;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +127,14 @@ public class ActiveMQConnectionFactory extends JNDIBaseStorable implements Conne
     protected String clientID;
     protected boolean dispatchAsync=true;
     protected boolean alwaysSessionAsync=true;
+    @Getter
+    @Setter
+    protected String clientGroupId;
+    @Getter
+    @Setter
+    protected String clientAppId;
+    @Getter
+    protected String clientEnv;
 
     JMSStatsImpl factoryStats = new JMSStatsImpl();
 
@@ -365,6 +376,9 @@ public class ActiveMQConnectionFactory extends JNDIBaseStorable implements Conne
     }
 
     protected void configureConnection(ActiveMQConnection connection) throws JMSException {
+        connection.setClientGroupId(getClientGroupId());
+        connection.setClientAppId(getClientAppId());
+        connection.setClientEnv(getClientEnv());
         connection.setPrefetchPolicy(getPrefetchPolicy());
         connection.setDisableTimeStampsByDefault(isDisableTimeStampsByDefault());
         connection.setOptimizedMessageDispatch(isOptimizedMessageDispatch());
@@ -908,6 +922,19 @@ public class ActiveMQConnectionFactory extends JNDIBaseStorable implements Conne
      */
     public void setAlwaysSessionAsync(boolean alwaysSessionAsync) {
         this.alwaysSessionAsync = alwaysSessionAsync;
+    }
+
+    public void setClientEnv(String clientEnv) {
+        if (StringUtils.isNotEmpty(clientEnv)) {
+            try {
+                String v = clientEnv.toUpperCase();
+                LOG.info("clientEnv: " + v);
+                ClientEnv.valueOf(v);
+                this.clientEnv = v;
+            } catch (Exception e) {
+                LOG.error("Illegal argument", e);
+            }
+        }
     }
 
     /**

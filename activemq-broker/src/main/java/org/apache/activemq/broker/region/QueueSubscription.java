@@ -17,17 +17,23 @@
 package org.apache.activemq.broker.region;
 
 import java.io.IOException;
+import java.util.Map;
 
+import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 
+import org.apache.activemq.ClientEnv;
 import org.apache.activemq.broker.Broker;
 import org.apache.activemq.broker.ConnectionContext;
 import org.apache.activemq.broker.region.group.MessageGroupMap;
+import org.apache.activemq.broker.registry.base.CacheListenerCallback;
+import org.apache.activemq.broker.registry.base.CoordinatorRegistryCenter;
 import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.activemq.command.ConsumerInfo;
 import org.apache.activemq.command.Message;
 import org.apache.activemq.command.MessageAck;
 import org.apache.activemq.usage.SystemUsage;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +41,64 @@ public class QueueSubscription extends PrefetchSubscription implements LockOwner
 
     private static final Logger LOG = LoggerFactory.getLogger(QueueSubscription.class);
 
+    private String registryPath;
+    private String currentSelector;
+
     public QueueSubscription(Broker broker, SystemUsage usageManager, ConnectionContext context, ConsumerInfo info) throws JMSException {
         super(broker,usageManager, context, info);
+        if (isAbEnabled()) {
+            this.registryPath = "/" + clientGroupId + "/" + clientAppId;
+            this.currentSelector = this.rawSelector;
+            CoordinatorRegistryCenter.create().addCacheData(registryPath, new CacheListenerCallback() {
+                @Override
+                public void onNodeChanged() throws Exception {
+                    try {
+                        refreshSelector();
+                    } catch (Exception e) {
+                        LOG.error("Error occurred on refreshing selector", e);
+                    }
+                }
+            });
+
+            refreshSelector();
+        }
+    }
+
+    protected boolean isAbEnabled() {
+        return StringUtils.isNoneEmpty(this.clientGroupId, this.clientAppId, this.clientEnv);
+    }
+
+    @Override
+    public void refreshSelector() throws InvalidSelectorException {
+        if (isAbEnabled()) {
+            String destinationName = getConsumerInfo().getDestination().getPhysicalName();
+            Map<String, Object> map = CoordinatorRegistryCenter.create().getDirectly(registryPath + "/" + destinationName, Map.class);
+
+            String abSelector = null;
+
+            if (map != null)
+                abSelector = (String) map.get("abtest.expression");
+
+            if (StringUtils.isEmpty(abSelector)) {
+                resetSelector();
+            } else {
+                if (getConsumerInfo().getClientEnv().equalsIgnoreCase(ClientEnv.PRD.toString())) {
+                    abSelector = "NOT (" + abSelector + ")";
+                }
+                String selectorToSet = abSelector + (StringUtils.isEmpty(rawSelector) ? "" : (" AND " + rawSelector));
+                if (!selectorToSet.equalsIgnoreCase(this.currentSelector)) {
+                    this.currentSelector = selectorToSet;
+                    setSelector(this.currentSelector);
+                }
+            }
+        }
+    }
+
+    private void resetSelector() throws InvalidSelectorException {
+        if (!(StringUtils.isEmpty(this.currentSelector) && StringUtils.isEmpty(this.rawSelector) || this.currentSelector.equalsIgnoreCase(this.rawSelector))) {
+            this.currentSelector = this.rawSelector;
+            setSelector(this.currentSelector);
+        }
     }
 
     /**
